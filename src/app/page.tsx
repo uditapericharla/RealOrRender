@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ShareArticleModal } from "@/components/ShareArticleModal";
 import { PostCard } from "@/components/PostCard";
 import { usePosts } from "@/hooks/usePosts";
+import { IS_DEMO_MODE } from "@/lib/api";
 
 export default function HomePage() {
   const { posts, loading, error, addPost } = usePosts();
@@ -29,6 +30,11 @@ export default function HomePage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-6">
+        {IS_DEMO_MODE && (
+          <div className="mb-4 rounded-md bg-warn-light border border-warn/30 p-3 text-sm text-warn">
+            Demo mode: using sample data. To analyze real articles, set <code className="bg-white/50 px-1 rounded">NEXT_PUBLIC_API_BASE_URL=http://localhost:8000</code> in <code className="bg-white/50 px-1 rounded">.env.local</code> and run the backend.
+          </div>
+        )}
         {error && (
           <div className="mb-4 rounded-md bg-warn-light border border-warn/30 p-3 text-sm text-warn">
             {error} — showing locally stored posts.

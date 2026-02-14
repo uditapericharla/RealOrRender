@@ -3,26 +3,14 @@ import { MOCK_ALLOW_REPORT, MOCK_WARN_REPORT, MOCK_BLOCK_REPORT } from "./mockDa
 import { getPostsFromStorage, savePostToStorage } from "./postStore";
 import { getReportFromStorage, saveReportToStorage } from "./reportStore";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").trim();
+export const IS_DEMO_MODE = !BASE_URL;
 
 export async function verifyArticle(url: string, comment?: string): Promise<VerificationReport> {
-  try {
-    const res = await fetch(`${BASE_URL}/api/verifyArticle`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, comment }),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Verify failed: ${res.status}`);
-    }
-
-    const report = await res.json();
-    saveReportToStorage(report);
-    return report;
-  } catch (error) {
-    // Fallback to mock data for demo/offline
-    console.warn("Verify API unavailable, using mock data:", error);
+  const apiUrl = `${BASE_URL}/api/verifyArticle`;
+  
+  if (IS_DEMO_MODE) {
+    // Demo mode: no backend configured, use mock data
     if (url.includes("block") || url.includes("fake")) {
       const report = {
         ...MOCK_BLOCK_REPORT,
@@ -38,6 +26,36 @@ export async function verifyArticle(url: string, comment?: string): Promise<Veri
     } as VerificationReport;
     saveReportToStorage(report);
     return report;
+  }
+
+  // Backend mode: ALWAYS call real API, never use mock data
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, comment }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(
+        res.status === 422
+          ? "Could not extract article from this URL. Try a different link."
+          : `Verification failed: ${res.status}`
+      );
+    }
+
+    const report = await res.json();
+    saveReportToStorage(report);
+    return report;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("fetch") || msg.includes("Failed") || msg.includes("NetworkError")) {
+      throw new Error(
+        "Cannot reach verification service. Ensure the backend is running (cd backend && uvicorn app.main:app --port 8000) and .env.local has NEXT_PUBLIC_API_BASE_URL=http://localhost:8000"
+      );
+    }
+    throw err;
   }
 }
 

@@ -34,14 +34,29 @@ NEXT_PUBLIC_API_BASE_URL=
   - Example: `http://localhost:8000` when running the backend locally  
   - Leave empty to run in demo/offline mode — the app will use mock verification reports and localStorage for posts
 
-### Running with Backend
+### Running with Backend (Real Article Analysis)
 
-1. Start the backend (see [backend/README.md](backend/README.md)):
+**Important:** Without the backend, the app uses demo/sample data. To analyze real articles:
+
+1. **Start the backend** (Terminal 1):
    ```bash
-   cd backend && pip install -r requirements.txt && uvicorn app.main:app --reload --port 8000
+   cd backend
+   pip install -r requirements.txt
+   uvicorn app.main:app --reload --port 8000
    ```
-2. Set `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000` in `.env.local`
-3. Run the frontend: `npm run dev`
+
+2. **Create `.env.local`** in the project root with:
+   ```
+   NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+   ```
+
+3. **Restart the frontend** (Terminal 2) — stop `npm run dev`, then:
+   ```bash
+   rm -rf .next
+   npm run dev
+   ```
+
+4. If you see "Demo mode" banner, the env var wasn't loaded — ensure `.env.local` is in the same folder as `package.json` and restart again.
 
 ### Run Development Server
 
