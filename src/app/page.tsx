@@ -7,7 +7,7 @@ import { usePosts } from "@/hooks/usePosts";
 import { IS_DEMO_MODE } from "@/lib/api";
 
 export default function HomePage() {
-  const { posts, loading, error, addPost } = usePosts();
+  const { posts, loading, error, addPost, clearPosts } = usePosts();
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -20,12 +20,22 @@ export default function HomePage() {
           <p className="text-sm text-stone-500">
             Pre-share verification for article links
           </p>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="mt-3 rounded-md bg-stone-800 px-4 py-2 text-sm font-medium text-white hover:bg-stone-900"
-          >
-            Share Article
-          </button>
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="rounded-md bg-stone-800 px-4 py-2 text-sm font-medium text-white hover:bg-stone-900"
+            >
+              Share Article
+            </button>
+            {posts.length > 0 && (
+              <button
+                onClick={clearPosts}
+                className="rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100"
+              >
+                Clear feed
+              </button>
+            )}
+          </div>
         </div>
       </header>
 

@@ -59,12 +59,25 @@ def run_verification(
         )
 
     # 4. Scoring
-    verdicts = [c.verdict for c in claim_results]
-    credibility_score = compute_credibility_score(
-        claim_verdicts=verdicts,
-        manipulation_signals=gemini_out.manipulation_signals,
-        ai_likelihood=gemini_out.ai_likelihood if gemini_out.ai_likelihood else None,
-    )
+    # When Backboard is unavailable, all claims get INSUFFICIENT -> score drops to ~30.
+    # Use a neutral score instead so the UI doesn't look broken.
+    verification_unavailable = all(
+        e.source == "Verification unavailable"
+        for c in claim_results for e in c.evidence
+    ) if claim_results else False
+
+    if verification_unavailable:
+        credibility_score = 65.0  # Neutral "could not fully verify"
+        summary_suffix = " (Verification service unavailable - add GEMINI_API_KEY and BACKBOARD_API_KEY for full analysis.)"
+    else:
+        verdicts = [c.verdict for c in claim_results]
+        credibility_score = compute_credibility_score(
+            claim_verdicts=verdicts,
+            manipulation_signals=gemini_out.manipulation_signals,
+            ai_likelihood=gemini_out.ai_likelihood if gemini_out.ai_likelihood else None,
+        )
+        summary_suffix = ""
+
     decision = get_decision(credibility_score)
 
     # 5. Build report
@@ -75,7 +88,7 @@ def run_verification(
         credibility_score=credibility_score,
         ai_likelihood=gemini_out.ai_likelihood,
         manipulation_signals=gemini_out.manipulation_signals or None,
-        summary=gemini_out.short_summary,
+        summary=gemini_out.short_summary + summary_suffix,
         article=ArticleInfo(
             title=article.title,
             url=article.url,

@@ -6,8 +6,11 @@ import { getReportFromStorage, saveReportToStorage } from "./reportStore";
 const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").trim();
 export const IS_DEMO_MODE = !BASE_URL;
 
+// Use same-origin proxy to avoid CORS; Next.js rewrites /api/backend/* -> backend:8000/api/*
+const API_PREFIX = BASE_URL ? "/api/backend" : "";
+
 export async function verifyArticle(url: string, comment?: string): Promise<VerificationReport> {
-  const apiUrl = `${BASE_URL}/api/verifyArticle`;
+  const apiUrl = `${API_PREFIX}/verifyArticle`;
   
   if (IS_DEMO_MODE) {
     // Demo mode: no backend configured, use mock data
@@ -64,7 +67,7 @@ export async function createPost(
   post_mode: "normal" | "warning_label"
 ): Promise<Post> {
   try {
-    const res = await fetch(`${BASE_URL}/api/posts`, {
+    const res = await fetch(`${API_PREFIX}/posts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ verification_id, post_mode }),
@@ -99,7 +102,7 @@ export async function createPost(
 
 export async function fetchPosts(): Promise<Post[]> {
   try {
-    const res = await fetch(`${BASE_URL}/api/posts`);
+    const res = await fetch(`${API_PREFIX}/posts`);
     if (!res.ok) {
       throw new Error(`Fetch posts failed: ${res.status}`);
     }
@@ -111,9 +114,18 @@ export async function fetchPosts(): Promise<Post[]> {
   }
 }
 
+export async function clearFeed(): Promise<void> {
+  if (!IS_DEMO_MODE) {
+    await fetch(`${API_PREFIX}/posts`, { method: "DELETE" });
+  }
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("realorrender-posts");
+  }
+}
+
 export async function fetchReport(verificationId: string): Promise<VerificationReport | null> {
   try {
-    const res = await fetch(`${BASE_URL}/api/reports/${verificationId}`);
+    const res = await fetch(`${API_PREFIX}/reports/${verificationId}`);
     if (!res.ok) {
       throw new Error(`Fetch report failed: ${res.status}`);
     }

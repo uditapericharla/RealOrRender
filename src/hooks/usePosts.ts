@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { Post } from "@/types";
-import { fetchPosts } from "@/lib/api";
+import { fetchPosts, clearFeed } from "@/lib/api";
 import { getPostsFromStorage } from "@/lib/postStore";
 
 export function usePosts() {
@@ -32,5 +32,10 @@ export function usePosts() {
     setPosts((prev) => [post, ...prev]);
   }, []);
 
-  return { posts, loading, error, addPost, refresh: loadPosts };
+  const clearPosts = useCallback(async () => {
+    await clearFeed();
+    setPosts([]);
+  }, []);
+
+  return { posts, loading, error, addPost, refresh: loadPosts, clearPosts };
 }

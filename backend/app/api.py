@@ -11,7 +11,7 @@ from app.models import (
     Post,
 )
 from app.services.verify import run_verification
-from app.db import get_report, save_post, get_posts, init_db
+from app.db import get_report, save_post, get_posts, clear_posts, init_db
 import uuid
 from datetime import datetime
 
@@ -101,3 +101,10 @@ def create_post(req: CreatePostRequest):
 def list_posts():
     """Return latest posts for feed."""
     return get_posts()
+
+
+@router.delete("/posts")
+def reset_posts():
+    """Clear all posts for a fresh start."""
+    clear_posts()
+    return {"ok": True}

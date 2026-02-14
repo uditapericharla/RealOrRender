@@ -126,6 +126,12 @@ def get_posts(limit: int = 50) -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def clear_posts() -> None:
+    """Clear all posts (for reset/fresh start)."""
+    with get_connection() as conn:
+        conn.execute("DELETE FROM posts")
+
+
 # --- Claim memory (Backboard-style cache) ---
 
 def get_cached_claim(claim_hash: str) -> Optional[dict]:
