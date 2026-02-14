@@ -1,0 +1,19 @@
+# RealOrRender Backend - deploy on Vultr or any Docker host
+# Usage: docker-compose up -d
+version: "3.8"
+
+services:
+  backend:
+    build: .
+    container_name: realorrender-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Persist SQLite data
+      - realorrender-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  realorrender-data:

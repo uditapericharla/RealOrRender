@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --allow: #16a34a;
+  --allow-light: #dcfce7;
+  --warn: #d97706;
+  --warn-light: #fef3c7;
+  --block: #dc2626;
+  --block-light: #fee2e2;
+}
+
+body {
+  @apply bg-stone-50 text-stone-900 antialiased;
+}
